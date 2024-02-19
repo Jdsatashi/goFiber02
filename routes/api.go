@@ -8,11 +8,16 @@ import (
 
 func SetupRouting(app *fiber.App, db *gorm.DB) {
 	api := app.Group("/api/v1")
-	controller := controllers.NewBooksController(db)
+	bookCtrl := controllers.NewBooksController(db)
+	userCtrl := controllers.NewUsersController(db)
 
-	api.Post("/create_books", controller.CreateBook)
-	api.Delete("/delete_books/:id", controller.DeleteBook)
-	api.Get("/get_book/:id", controller.GetBook)
-	api.Put("/get_book/:id", controller.UpdateBook)
-	api.Get("/books", controller.GetBooks)
+	api.Post("/create_books", bookCtrl.CreateBook)
+	api.Delete("/delete_books/:id", bookCtrl.DeleteBook)
+	api.Get("/get_book/:id", bookCtrl.GetBook)
+	api.Put("/get_book/:id", bookCtrl.UpdateBook)
+	api.Get("/books", bookCtrl.GetBooks)
+
+	api.Post("/register", userCtrl.Register)
+	api.Post("/login", userCtrl.Login)
+	api.Get("/middleware", controllers.Protected)
 }

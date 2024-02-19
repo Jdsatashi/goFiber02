@@ -4,6 +4,8 @@ go 1.21.6
 
 require (
 	github.com/gofiber/fiber/v2 v2.52.0
+	github.com/gofiber/jwt/v3 v3.3.10
+	github.com/golang-jwt/jwt/v4 v4.5.0
 	github.com/joho/godotenv v1.5.1
 	gorm.io/driver/postgres v1.5.4
 	gorm.io/gorm v1.25.6

@@ -10,7 +10,6 @@ import (
 	"github.com/Jdsatashi/goFiber02/storage"
 	"github.com/gofiber/fiber/v2"
 	"github.com/joho/godotenv"
-
 )
 
 func main() {
@@ -34,11 +33,17 @@ func main() {
 		log.Fatal("Can not connect to database!")
 	}
 
-	err2 := models.MigrateBooks(db)
-	if err2 != nil {
+	err = models.MigrateBooks(db)
+	if err != nil {
 		log.Fatal("Can not migrate to database!")
 	} else {
-		fmt.Println("\nMigrating to database")
+		fmt.Println("\nMigrating to Books")
+	}
+	err = models.MigrateUsers(db)
+	if err != nil {
+		log.Fatal("Can not migrate to database!")
+	} else {
+		fmt.Println("\nMigrating to Users")
 	}
 	app := fiber.New()
 	routes.SetupRouting(app, db)
