@@ -43,7 +43,7 @@ func main() {
 	if err != nil {
 		log.Fatal("Can not migrate to database!")
 	} else {
-		fmt.Println("\nMigrating to Users")
+		fmt.Println("Migrating to Users")
 	}
 	app := fiber.New()
 	routes.SetupRouting(app, db)

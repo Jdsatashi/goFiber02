@@ -1,9 +1,9 @@
 package controllers
 
 import (
-	"fmt"
 	"github.com/Jdsatashi/goFiber02/config"
 	"github.com/Jdsatashi/goFiber02/models"
+	repo "github.com/Jdsatashi/goFiber02/repositories"
 	"github.com/gofiber/fiber/v2"
 	jtoken "github.com/golang-jwt/jwt/v4"
 	"golang.org/x/crypto/bcrypt"
@@ -12,52 +12,16 @@ import (
 	"time"
 )
 
-type UsersController struct {
+type AuthController struct {
 	DB *gorm.DB
 }
 
-func NewUsersController(db *gorm.DB) *UsersController {
-	return &UsersController{DB: db}
+func NewAuthController(db *gorm.DB) *AuthController {
+	return &AuthController{DB: db}
 }
 
-func (ctr *UsersController) Register(c *fiber.Ctx) error {
-	user := &models.Users{}
-	err := c.BodyParser(user)
-	if err != nil {
-		c.Status(http.StatusUnprocessableEntity).JSON(
-			&fiber.Map{
-				"message": "Invalid request",
-				"error":   err.Error(),
-			})
-		return err
-	}
-	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
-	if err != nil {
-		c.Status(http.StatusBadRequest).JSON(&fiber.Map{
-			"message": "Cannot encrypting password",
-		})
-		return err
-	}
-	user.Password = string(hashedPassword)
-	err = ctr.DB.Create(&user).Error
-	if err != nil {
-		c.Status(http.StatusBadRequest).JSON(&fiber.Map{
-			"message": "Bad request",
-		})
-		return err
-	}
-	c.Status(http.StatusCreated).JSON(&fiber.Map{
-		"message": "User created",
-		"data": &fiber.Map{
-			"username": user.Username,
-			"email":    user.Email,
-		},
-	})
-	return nil
-}
-
-func (ctr *UsersController) Login(c *fiber.Ctx) error {
-	loginRequest := new(models.LoginRequest)
+func (ctr *AuthController) Login(c *fiber.Ctx) error {
+	loginRequest := &repo.LoginRequest{}
 	user := &models.Users{}
 	if err := c.BodyParser(loginRequest); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
@@ -77,9 +41,9 @@ func (ctr *UsersController) Login(c *fiber.Ctx) error {
 		})
 		return err
 	}
-	date := time.Hour * 24
+	date := time.Hour * 12
 	claims := jtoken.MapClaims{
-		"ID":       user.ID,
+		"UserCode": user.UserCode,
 		"email":    user.Email,
 		"username": user.Username,
 		"exp":      time.Now().Add(date * 1).Unix(),
@@ -94,7 +58,7 @@ func (ctr *UsersController) Login(c *fiber.Ctx) error {
 	return c.JSON(fiber.Map{
 		"token": t,
 		"user": fiber.Map{
-			"ID":       user.ID,
+			"UserCode": user.UserCode,
 			"email":    user.Email,
 			"username": user.Username,
 		},
@@ -103,7 +67,6 @@ func (ctr *UsersController) Login(c *fiber.Ctx) error {
 
 func Protected(c *fiber.Ctx) error {
 	user := c.Locals("user").(*jtoken.Token)
-	fmt.Printf("\nUser is %v", user)
 	claims := user.Claims.(jtoken.MapClaims)
 	email := claims["email"].(string)
 	username := claims["username"].(string)

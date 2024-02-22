@@ -1,24 +1,37 @@
 package models
 
-import "gorm.io/gorm"
+import (
+	"gorm.io/gorm"
+	"time"
+)
 
-type Users struct {
-	ID       int    `json:"id"`
-	Email    string `json:"email"`
-	Username string `json:"username"`
-	Password string `json:"password"`
+type TimeStamped struct {
+	CreatedAt time.Time `gorm:"autoCreateTime"`
+	UpdatedAt time.Time
 }
 
-type LoginRequest struct {
-	Email    string `json:"email"`
-	Password string `json:"password"`
+type Users struct {
+	UserCode   string         `gorm:"primaryKey;autoIncrement:false;type:varchar(10)" json:"usercode"`
+	Email      string         `gorm:"type:varchar(50);unique;not null" json:"email"`
+	Username   string         `gorm:"type:varchar(50);unique;not null" json:"username"`
+	Password   string         `json:"password"`
+	Permission []*Permissions `gorm:"many2many:users_permissions"`
+}
+
+type Permissions struct {
+	ID          int      `gorm:"primaryKey;" json:"id"`
+	Name        string   `json:"name"`
+	Description string   `json:"description"`
+	User        []*Users `gorm:"many2many:users_permissions"`
 }
 
 type Books struct {
-	ID        uint    `gorm:"primary key; autoIncrement" json:"id"`
-	Author    *string `json:"author"`
-	Title     *string `json:"title"`
-	Publisher *string `json:"publisher"`
+	ID        uint   `gorm:"primaryKey" json:"id"`
+	Author    string `json:"author"`
+	Title     string `gorm:"unique" json:"title"`
+	Publisher string `json:"publisher"`
+	WriterID  string `json:"writer_name"`
+	Writer    Users  `gorm:"foreignKey:WriterID;references:Username"`
 }
 
 func MigrateBooks(db *gorm.DB) error {
@@ -29,8 +42,4 @@ func MigrateBooks(db *gorm.DB) error {
 func MigrateUsers(db *gorm.DB) error {
 	var err = db.AutoMigrate(&Users{})
 	return err
-}
-
-type LoginResponse struct {
-	Token string `json:"token"`
 }
