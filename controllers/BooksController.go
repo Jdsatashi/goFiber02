@@ -2,12 +2,15 @@ package controllers
 
 import (
 	"fmt"
+	"github.com/Jdsatashi/goFiber02/handlers"
 	"net/http"
 
 	"github.com/Jdsatashi/goFiber02/models"
 	"github.com/gofiber/fiber/v2"
 	"gorm.io/gorm"
 )
+
+var bookHandler = handlers.BookHandler{}
 
 type BooksController struct {
 	DB *gorm.DB
@@ -18,7 +21,7 @@ func NewBooksController(db *gorm.DB) *BooksController {
 }
 
 func (ctr *BooksController) CreateBook(c *fiber.Ctx) error {
-	book := models.Books{}
+	book := &models.Books{}
 	err := c.BodyParser(&book)
 	if err != nil {
 		c.Status(http.StatusUnprocessableEntity).JSON(
@@ -35,14 +38,14 @@ func (ctr *BooksController) CreateBook(c *fiber.Ctx) error {
 
 	c.Status(http.StatusCreated).JSON(&fiber.Map{
 		"message": "Book created",
-		"data":    book,
+		"data":    bookHandler.ToBookResponse(*book),
 	})
 	return nil
 }
 
 func (ctr *BooksController) GetBooks(c *fiber.Ctx) error {
 	var books = &[]models.Books{}
-	var err = ctr.DB.Find(books).Error
+	var err = ctr.DB.Find(&books).Error
 	if err != nil {
 		c.Status(http.StatusBadRequest).JSON(&fiber.Map{
 			"message": "Bad request",
@@ -52,7 +55,7 @@ func (ctr *BooksController) GetBooks(c *fiber.Ctx) error {
 
 	c.Status(http.StatusOK).JSON(&fiber.Map{
 		"message": "Get books success",
-		"data":    books,
+		"data":    bookHandler.ToBooksResponse(*books),
 	})
 
 	return nil
@@ -67,7 +70,7 @@ func (ctr *BooksController) DeleteBook(c *fiber.Ctx) error {
 		})
 		return nil
 	}
-	err := ctr.DB.Delete(bookModel, id)
+	err := ctr.DB.Delete(&bookModel, id)
 	fmt.Printf("Error: %v\n", err)
 	if err != nil {
 		c.Status(http.StatusBadRequest).JSON(&fiber.Map{
@@ -98,7 +101,7 @@ func (ctr *BooksController) GetBook(c *fiber.Ctx) error {
 	}
 	c.Status(http.StatusOK).JSON(&fiber.Map{
 		"message": "Get item success.",
-		"data":    bookModel,
+		"data":    bookHandler.ToBookResponse(*bookModel),
 	})
 	return nil
 }
@@ -118,13 +121,13 @@ func (ctr *BooksController) UpdateBook(c *fiber.Ctx) error {
 			"message": "Cannot get item.",
 		})
 	}
-	book := models.Books{}
+	book := &models.Books{}
 	err := c.BodyParser(&book)
 	if err != nil {
 		c.Status(http.StatusUnprocessableEntity).JSON(
 			&fiber.Map{"message": "Invalid request"})
 	}
-	err3 := ctr.DB.Model(bookModel).Updates(&book).Error
+	err3 := ctr.DB.Model(&bookModel).Updates(&book).Error
 	if err3 != nil {
 		c.Status(http.StatusBadRequest).JSON(&fiber.Map{
 			"message": "Bad request",
@@ -132,7 +135,7 @@ func (ctr *BooksController) UpdateBook(c *fiber.Ctx) error {
 	}
 	c.Status(http.StatusCreated).JSON(&fiber.Map{
 		"message": "Book updated",
-		"data":    book,
+		"data":    bookHandler.ToBookResponse(*book),
 	})
 	return nil
 }

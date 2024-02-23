@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"fmt"
 	"github.com/Jdsatashi/goFiber02/config"
 	"github.com/Jdsatashi/goFiber02/models"
 	repo "github.com/Jdsatashi/goFiber02/repositories"
@@ -43,11 +44,12 @@ func (ctr *AuthController) Login(c *fiber.Ctx) error {
 	}
 	date := time.Hour * 12
 	claims := jtoken.MapClaims{
-		"UserCode": user.UserCode,
+		"usercode": user.UserCode,
 		"email":    user.Email,
 		"username": user.Username,
 		"exp":      time.Now().Add(date * 1).Unix(),
 	}
+	fmt.Printf("Time is %v", time.Now().Add(date*1).Unix())
 	token := jtoken.NewWithClaims(jtoken.SigningMethodHS256, claims)
 	t, err := token.SignedString([]byte(config.Secret))
 	if err != nil {
@@ -57,11 +59,7 @@ func (ctr *AuthController) Login(c *fiber.Ctx) error {
 	}
 	return c.JSON(fiber.Map{
 		"token": t,
-		"user": fiber.Map{
-			"UserCode": user.UserCode,
-			"email":    user.Email,
-			"username": user.Username,
-		},
+		"user":  userHandler.ToUserResponse(*user),
 	})
 }
 

@@ -9,7 +9,7 @@ import (
 	"net/http"
 )
 
-var handler = handlers.UserHandler{}
+var userHandler = handlers.UserHandler{}
 
 type UsersController struct {
 	DB *gorm.DB
@@ -45,7 +45,7 @@ func (ctr *UsersController) UserCreate(c *fiber.Ctx) error {
 		})
 		return err
 	}
-	response := handler.ToUserResponse(*user)
+	response := userHandler.ToUserResponse(*user)
 	c.Status(http.StatusCreated).JSON(&fiber.Map{
 		"message": "User created",
 		"data":    response,
@@ -63,7 +63,7 @@ func (ctr *UsersController) UserList(c *fiber.Ctx) error {
 		})
 		return err
 	}
-	responses := handler.ToUsersResponse(*users)
+	responses := userHandler.ToUsersResponse(*users)
 	c.Status(http.StatusOK).JSON(&fiber.Map{
 		"message": "Users retrieved",
 		"data":    responses,
@@ -85,7 +85,7 @@ func (ctr *UsersController) UserDetail(c *fiber.Ctx) error {
 			"message": "Cannot find item with user code = " + userId,
 		})
 	}
-	response := handler.ToUserResponse(*user)
+	response := userHandler.ToUserResponse(*user)
 	c.Status(http.StatusOK).JSON(&fiber.Map{
 		"message": "Get successfully user: " + user.Username,
 		"data":    response,
@@ -118,14 +118,14 @@ func (ctr *UsersController) UserUpdate(c *fiber.Ctx) error {
 			})
 		return err
 	}
-	err = ctr.DB.Model(userModel).Updates(&updateUser).Error
+	err = ctr.DB.Model(&userModel).Updates(&updateUser).Error
 	if err != nil {
 		c.Status(http.StatusBadRequest).JSON(&fiber.Map{
 			"message": "Bad request",
 			"error":   err.Error(),
 		})
 	}
-	response := handler.ToUserResponse(*updateUser)
+	response := userHandler.ToUserResponse(*updateUser)
 	c.Status(http.StatusOK).JSON(fiber.Map{
 		"message": "Update successfully user " + updateUser.Username,
 		"data":    response,

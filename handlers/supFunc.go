@@ -7,6 +7,7 @@ import (
 
 type UserHandler struct {
 }
+type BookHandler struct{}
 
 func (u *UserHandler) ToUserResponse(user models.Users) *repo.UserResponse {
 	return &repo.UserResponse{
@@ -16,14 +17,6 @@ func (u *UserHandler) ToUserResponse(user models.Users) *repo.UserResponse {
 	}
 }
 
-//func (u *UserHandler) ToUsersResponse(users []*models.Users) []*repo.UserResponse {
-//	var responseList []*repo.UserResponse
-//	for _, user := range users {
-//		responseList = append(responseList, u.ToUserResponse(user))
-//	}
-//	return responseList
-//}
-
 func (u *UserHandler) ToUsersResponse(users []models.Users) []*repo.UserResponse {
 	var responses []*repo.UserResponse
 	for _, user := range users {
@@ -32,9 +25,20 @@ func (u *UserHandler) ToUsersResponse(users []models.Users) []*repo.UserResponse
 	return responses
 }
 
-//response := &repo.UserResponse{
-//	ID:    user.ID,
-//	Name:  user.Username,
-//	Email: user.Email,
-//}
-//responses = append(responses, response)
+func (b *BookHandler) ToBookResponse(book models.Books) *repo.BookResponse {
+	return &repo.BookResponse{
+		ID:        book.ID,
+		Author:    book.Author,
+		Title:     book.Title,
+		Publisher: book.Publisher,
+		WriterID:  book.WriterID,
+	}
+}
+
+func (b *BookHandler) ToBooksResponse(books []models.Books) []*repo.BookResponse {
+	var responses []*repo.BookResponse
+	for _, book := range books {
+		responses = append(responses, b.ToBookResponse(book))
+	}
+	return responses
+}
