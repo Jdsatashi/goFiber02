@@ -2,6 +2,9 @@ package controllers
 
 import (
 	"fmt"
+	"net/http"
+	"time"
+
 	"github.com/Jdsatashi/goFiber02/config"
 	"github.com/Jdsatashi/goFiber02/models"
 	repo "github.com/Jdsatashi/goFiber02/repositories"
@@ -9,8 +12,6 @@ import (
 	jtoken "github.com/golang-jwt/jwt/v4"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
-	"net/http"
-	"time"
 )
 
 type AuthController struct {
@@ -42,6 +43,20 @@ func (ctr *AuthController) Login(c *fiber.Ctx) error {
 		})
 		return err
 	}
+	t, err := CreateLoginToken(*user)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "Error creating Token",
+			"error":   err.Error(),
+		})
+	}
+	return c.JSON(fiber.Map{
+		"token": t,
+		"user":  userHandler.ToUserResponse(*user),
+	})
+}
+
+func CreateLoginToken(user models.Users) (string, error) {
 	date := time.Hour * 12
 	claims := jtoken.MapClaims{
 		"usercode": user.UserCode,
@@ -53,14 +68,9 @@ func (ctr *AuthController) Login(c *fiber.Ctx) error {
 	token := jtoken.NewWithClaims(jtoken.SigningMethodHS256, claims)
 	t, err := token.SignedString([]byte(config.Secret))
 	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error": err.Error(),
-		})
+		return "", err
 	}
-	return c.JSON(fiber.Map{
-		"token": t,
-		"user":  userHandler.ToUserResponse(*user),
-	})
+	return t, nil
 }
 
 func Protected(c *fiber.Ctx) error {
