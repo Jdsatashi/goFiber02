@@ -11,7 +11,7 @@ type TimeStamped struct {
 	UpdatedAt time.Time
 }
 
-// User model for login infomation
+// Users User model for login infomation
 type Users struct {
 	UserCode    string         `gorm:"primaryKey;autoIncrement:false;type:varchar(10);unique" json:"usercode"`
 	Email       string         `gorm:"type:varchar(50);unique;not null" json:"email"`
@@ -23,9 +23,9 @@ type Users struct {
 	TimeStamped
 }
 
-// Create permissions for users
+// Permissions Create permissions for users
 type Permissions struct {
-	ID          int      `gorm:"primaryKey;unique" json:"id"`
+	ID          int      `gorm:"primaryKey;unique;autoIncrement:true" json:"id"`
 	Name        string   `gorm:"unique" json:"name"`
 	Description string   `json:"description"`
 	User        []*Users `gorm:"many2many:users_permissions"`
@@ -42,7 +42,7 @@ type Roles struct {
 	User        []*Users       `gorm:"many2many:users_roles"`
 }
 
-// Book for testing data
+// Books Book for testing data
 type Books struct {
 	ID        int    `gorm:"primaryKey;unique" json:"id"`
 	Author    string `json:"author"`
@@ -53,7 +53,7 @@ type Books struct {
 	TimeStamped
 }
 
-// Specific and add token to database
+// LoginTokens Specific and add token to database
 type LoginTokens struct {
 	ID           int       `gorm:"primaryKey;unique" json:"id"`
 	Token        string    `gorm:"unique" json:"token"`
@@ -66,7 +66,7 @@ type LoginTokens struct {
 	CreatedAt    time.Time `json:"created_at"`
 }
 
-// Migrating to create table
+// MigrateBooks Migrating to create table
 func MigrateBooks(db *gorm.DB) error {
 	var err = db.AutoMigrate(&Books{})
 	return err

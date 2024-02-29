@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/Jdsatashi/goFiber02/storage/seeders"
 	"log"
 	"os"
 
@@ -17,7 +18,6 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-
 	config := &storage.Config{
 		Host:     os.Getenv("DB_HOST"),
 		Port:     os.Getenv("DB_PORT"),
@@ -45,6 +45,7 @@ func main() {
 	} else {
 		fmt.Println("Migrating to Users")
 	}
+	seeders.PermissionsSeeding(db)
 	app := fiber.New()
 	routes.SetupRouting(app, db)
 	if err := app.Listen(":3000"); err != nil {
