@@ -25,7 +25,7 @@ type Users struct {
 
 // Permissions Create permissions for users
 type Permissions struct {
-	ID          int      `gorm:"primaryKey;unique;autoIncrement:true" json:"id"`
+	ID          int      `json:"id"`
 	Name        string   `gorm:"unique" json:"name"`
 	Description string   `json:"description"`
 	User        []*Users `gorm:"many2many:users_permissions"`
@@ -35,7 +35,7 @@ type Permissions struct {
 
 // Roles as permissions group
 type Roles struct {
-	ID          int            `gorm:"primaryKey;unique" json:"id"`
+	ID          int            `json:"id"`
 	Name        string         `gorm:"unique" json:"role_name"`
 	Description string         `json:"description"`
 	Permission  []*Permissions `gorm:"many2many:users_permissions"`
@@ -55,7 +55,7 @@ type Books struct {
 
 // LoginTokens Specific and add token to database
 type LoginTokens struct {
-	ID           int       `gorm:"primaryKey;unique" json:"id"`
+	ID           int       `json:"id"`
 	Token        string    `gorm:"unique" json:"token"`
 	ClientIP     string    `gorm:"unique" json:"client_ip"`
 	DeviceType   string    `json:"device_type"`

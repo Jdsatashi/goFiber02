@@ -20,8 +20,14 @@ func NewUsersController(db *gorm.DB) *UsersController {
 }
 
 func (ctr *UsersController) UserCreate(c *fiber.Ctx) error {
-	user := &models.Users{}
-	err := c.BodyParser(user)
+	// user := &models.Users{}
+	var perms []*models.Permissions
+	var request struct {
+		User  models.Users `json:"user"`
+		Perms []string     `json:"permissions"`
+	}
+	err := c.BodyParser(&request)
+	user := request.User
 	if err != nil {
 		c.Status(http.StatusUnprocessableEntity).JSON(
 			&fiber.Map{
@@ -38,6 +44,12 @@ func (ctr *UsersController) UserCreate(c *fiber.Ctx) error {
 		return err
 	}
 	user.Password = string(hashedPassword)
+	for _, permName := range request.Perms {
+		var perm *models.Permissions
+		err = ctr.DB.Where("name = ?", permName).First(&perm).Error
+		perms = append(perms, perm)
+	}
+	user.Permission = perms
 	err = ctr.DB.Create(&user).Error
 	if err != nil {
 		c.Status(http.StatusBadRequest).JSON(&fiber.Map{
@@ -45,10 +57,13 @@ func (ctr *UsersController) UserCreate(c *fiber.Ctx) error {
 		})
 		return err
 	}
-	response := userHandler.ToUserResponse(*user)
+	response := userHandler.ToUserResponse(user)
 	c.Status(http.StatusCreated).JSON(&fiber.Map{
 		"message": "User created",
-		"data":    response,
+		"data": fiber.Map{
+			"user":  response,
+			"perms": perms,
+		},
 	})
 	return nil
 }

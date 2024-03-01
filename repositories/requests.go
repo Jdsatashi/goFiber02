@@ -20,3 +20,7 @@ type BookCreate struct {
 	Publisher string `json:"publisher"`
 	Writer    string `json:"writer"`
 }
+
+type PermsRequest struct {
+	Name string `json:"name"`
+}
