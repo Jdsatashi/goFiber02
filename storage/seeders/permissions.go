@@ -8,22 +8,11 @@ import (
 )
 
 func PermissionsSeeding(db *gorm.DB) {
-	bookPerms := Data("books")
-	AutoAdd(bookPerms, db)
+	AutoCreate("books", db)
+	AutoCreate("users", db)
 }
 
-func AutoAdd(permission []models.Permissions, db *gorm.DB) {
-	for _, perm := range permission {
-		fmt.Printf("Permissions to add: %v\n", perm)
-		err := db.Where(models.Permissions{Name: perm.Name}).FirstOrCreate(&perm).Error
-		if err != nil {
-			fmt.Printf("Error: %v\n", err)
-			log.Fatalf("Failed when auto-create %v permission!", perm.Name)
-		}
-	}
-}
-
-func Data(perm string) []models.Permissions {
+func AutoCreate(perm string, db *gorm.DB) {
 	var groupPerms []models.Permissions
 	perms0 := &models.Permissions{
 		Name:        "list_" + perm,
@@ -50,5 +39,12 @@ func Data(perm string) []models.Permissions {
 		Description: "Allow user delete " + perm,
 	}
 	groupPerms = append(groupPerms, *perms4)
-	return groupPerms
+	for _, perm := range groupPerms {
+		fmt.Printf("Permissions to add: %v\n", perm)
+		err := db.Where(models.Permissions{Name: perm.Name}).FirstOrCreate(&perm).Error
+		if err != nil {
+			fmt.Printf("Error: %v\n", err)
+			log.Fatalf("Failed when auto-create %v permission!", perm.Name)
+		}
+	}
 }
