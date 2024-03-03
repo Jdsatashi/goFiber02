@@ -1,6 +1,7 @@
 package seeders
 
 import (
+	"errors"
 	"fmt"
 	"github.com/Jdsatashi/goFiber02/models"
 	"gorm.io/gorm"
@@ -8,11 +9,35 @@ import (
 )
 
 func PermissionsSeeding(db *gorm.DB) {
-	AutoCreate("books", db)
-	AutoCreate("users", db)
+	_ = AutoCreateCRUD("books", db)
+	_ = AutoCreateCRUD("users", db)
+	_ = CreatePerm([]string{"own_user_view", "Allow user to view own account"}, db)
+	_ = CreatePerm([]string{"own_user_edit", "Allow user to edit own account"}, db)
 }
 
-func AutoCreate(perm string, db *gorm.DB) {
+// CreatePerm Create specific permission
+func CreatePerm(perm []string, db *gorm.DB) error {
+	newPerm := &models.Permissions{
+		Name:        perm[0],
+		Description: perm[1],
+	}
+	if newPerm.Name == "" {
+		return errors.New("permission's name can not be empty")
+	}
+	fmt.Printf("Permissions to add: %v\n", perm)
+	err := db.Where("name = ?", newPerm.Name).FirstOrCreate(&newPerm).Error
+	if err != nil {
+		fmt.Printf("Error: %v\n", err)
+		log.Fatalf("Failed when auto-create %v permission!", newPerm.Name)
+	}
+	return nil
+}
+
+// AutoCreateCRUD will auto create CRUD permissions for a function
+func AutoCreateCRUD(perm string, db *gorm.DB) error {
+	if perm == "" {
+		return errors.New("permission's group name can not be empty")
+	}
 	var groupPerms []models.Permissions
 	perms0 := &models.Permissions{
 		Name:        "list_" + perm,
@@ -41,10 +66,11 @@ func AutoCreate(perm string, db *gorm.DB) {
 	groupPerms = append(groupPerms, *perms4)
 	for _, perm := range groupPerms {
 		fmt.Printf("Permissions to add: %v\n", perm)
-		err := db.Where(models.Permissions{Name: perm.Name}).FirstOrCreate(&perm).Error
+		err := db.Where("name = ?", perm.Name).FirstOrCreate(&perm).Error
 		if err != nil {
 			fmt.Printf("Error: %v\n", err)
 			log.Fatalf("Failed when auto-create %v permission!", perm.Name)
 		}
 	}
+	return nil
 }
