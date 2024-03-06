@@ -1,7 +1,6 @@
 package seeders
 
 import (
-	"fmt"
 	"github.com/Jdsatashi/goFiber02/models"
 	"gorm.io/gorm"
 )
@@ -14,30 +13,30 @@ func RoleAssignPermissions(roleName string, perms []string, db *gorm.DB) error {
 	role := &models.Roles{}
 	var permissions []*models.Permissions
 	// Check if role existed
-	err := db.Where("name = ?", roleName).First(&role)
-	// If not existed, create new one
+	err := db.Where("name = ?", roleName).FirstOrCreate(&role).Error
+	// Handle error
 	if err != nil {
-		err2 := db.Create(&models.Roles{Name: roleName})
-		fmt.Printf("Role not exist, create role: %v", roleName)
-		// Handle log if got error
-		if err2 != nil {
-			return err2.Error
-		}
+		return err
 	}
-	db.Where("name = ?", roleName).First(&role)
-	// Assign permissions to role
+	// Assign permission to group permissions
 	for _, perm := range perms {
+		// Create temp permission to get permissions from name perms slice
 		permission := &models.Permissions{}
-		err := db.Where("name = ?", perm).First(permission)
+		err := db.Where("name = ?", perm).First(permission).Error
+		// Handle error
 		if err != nil {
-			return err.Error
+			return err
 		}
+		// Append valid permission to permissions slice
 		permissions = append(permissions, permission)
 	}
+	// Assign permissions to role model
 	role.Permission = permissions
-	err = db.Model(role).Updates(&role)
+	// Handling assign permissions to role on database
+	err = db.Model(role).Updates(&role).Error
+	// Handle error
 	if err != nil {
-		return err.Error
+		return err
 	}
 	return nil
 }

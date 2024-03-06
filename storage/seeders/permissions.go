@@ -3,9 +3,9 @@ package seeders
 import (
 	"errors"
 	"fmt"
+
 	"github.com/Jdsatashi/goFiber02/models"
 	"gorm.io/gorm"
-	"log"
 )
 
 func PermissionsSeeding(db *gorm.DB) {
@@ -28,7 +28,7 @@ func CreatePerm(perm []string, db *gorm.DB) error {
 	err := db.Where("name = ?", newPerm.Name).FirstOrCreate(&newPerm).Error
 	if err != nil {
 		fmt.Printf("Error: %v\n", err)
-		log.Fatalf("Failed when auto-create %v permission!", newPerm.Name)
+		return err
 	}
 	return nil
 }
@@ -69,7 +69,7 @@ func AutoCreateCRUD(perm string, db *gorm.DB) error {
 		err := db.Where("name = ?", perm.Name).FirstOrCreate(&perm).Error
 		if err != nil {
 			fmt.Printf("Error: %v\n", err)
-			log.Fatalf("Failed when auto-create %v permission!", perm.Name)
+			return err
 		}
 	}
 	return nil
